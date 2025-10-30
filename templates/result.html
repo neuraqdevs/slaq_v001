@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice Analysis Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .success { color: green; }
+        .info { background: #f0f0f0; padding: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="info">
+            <p><strong>Username:</strong> {{ username }}</p>
+            <p><strong>Voice File:</strong> {{ voice_note_name }}</p>
+            <p><strong>File Size:</strong> {{ voice_note_size }} bytes</p>
+            <p class="success"><strong>Status:</strong> {{ message }}</p>
+        </div>
+        
+        <br>
+        <a href="/">🔁 Analyze Another Voice</a>
+    </div>
+</body>
+</html>

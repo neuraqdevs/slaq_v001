@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Slaq AI - Speech Fluency Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #121212;
+      cursor: none;
+      overflow-x: hidden;
+    }
+    .cursor-dot, .cursor-outline {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      border-radius: 50%;
+      z-index: 9999;
+      will-change: transform;
+    }
+    .cursor-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #ff4d4d;
+      transition: transform 0.1s ease-out;
+    }
+    .cursor-outline {
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255, 77, 77, 0.5);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .hovered-cursor .cursor-outline {
+      width: 50px;
+      height: 50px;
+      background-color: rgba(255, 152, 0, 0.3);
+      border-color: #ff9800;
+    }
+    .mic-icon-container {
+      width: 128px;
+      height: 128px;
+      position: relative;
+      cursor: pointer;
+      z-index: 20;
+    }
+    .mic-icon-base {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease-in-out;
+    }
+    .mic-icon-base svg {
+      color: #ff4d4d;
+      z-index: 10;
+    }
+    .mic-ready {
+      animation: pulse-ready 2s infinite;
+    }
+    @keyframes pulse-ready {
+      0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+      70% { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+    }
+    .mic-recording .mic-icon-base {
+      background-color: #ff4d4d;
+      animation: pulse-recording 1.5s infinite;
+    }
+    .mic-recording .mic-icon-base svg {
+      color: #fff;
+    }
+    @keyframes pulse-recording {
+      0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7); }
+      70% { box-shadow: 0 0 0 25px rgba(255, 77, 77, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+    }
+  </style>
+</head>
+<body class="text-white" onmouseleave="document.body.classList.add('cursor-hidden')" onmouseenter="document.body.classList.remove('cursor-hidden')">
+
+  <!-- Custom Cursor -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-outline"></div>
+
+  <!-- Hero Section -->
+  <section class="min-h-screen flex flex-col justify-center items-center text-center px-6">
+    <h1 class="text-5xl font-bold mb-4">🎙️ Analyze Your <span class="text-[#ff4d4d]">Voice</span></h1>
+    <p class="text-gray-400 mb-8">Record your speech and get instant fluency feedback.</p>
+
+    <!-- Form -->
+    <form method="post" enctype="multipart/form-data" id="registrationForm" action="{% url 'voiceapp:home' %}" class="space-y-6 w-full max-w-xl">
+      {% csrf_token %}
+
+      <!-- Username -->
+      <div>
+        <label for="username" class="block mb-1 font-medium">Username</label>
+        <input type="text" id="username" name="username" required placeholder="Enter your name" class="w-full px-4 py-2 rounded bg-gray-800 border border-gray-600 focus:ring-2 focus:ring-[#ff4d4d]"/>
+      </div>
+
+      <!-- Mic Icon -->
+      <div class="flex flex-col items-center space-y-4">
+        <button type="button" id="recordButton" class="mic-icon-container mic-ready">
+          <div class="mic-icon-base">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" x2="12" y1="19" y2="22"/>
+            </svg>
+          </div>
+        </button>
+        <p id="mic-status" class="text-lg">Click to Start Recording</p>
+        <input type="file" id="voice_note" name="voice_note" accept="audio/*" class="hidden" required />
+        <audio id="audioPlayback" controls class="hidden rounded-lg mt-2 w-full"></audio>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="w-full py-3 bg-[#ff4d4d] hover:bg-[#e60000] rounded font-semibold">Submit & Analyze</button>
+
+      <!-- Transcription Output -->
+      <div class="mt-6">
+        <h3 class="text-xl font-semibold text-white mb-2">Speech Transcript</h3>
+        <textarea
+          id="transcription-output"
+          class="w-full h-80 p-6 bg-[#121212] text-white border border-gray-700 rounded-xl focus:ring-2 focus:ring-[#ff4d4d] focus:border-transparent transition duration-300"
+          readonly
+        >{% if analysis_result %}
+Username: {{ username }}
+Voice File: {{ voice_file }}
+Analysis Method: {{ analysis_result.analysis_method }}
+
+🔊 Acoustic Features:
+Energy: {{ analysis_result.energy|floatformat:4 }}
+Zero Crossing Rate: {{ analysis_result.zero_crossing_rate|floatformat:4 }}
+Spectral Centroid: {{ analysis_result.spectral_centroid|floatformat:0 }} Hz
+Fundamental Freq: {{ analysis_result.fundamental_frequency|floatformat:0 }} Hz
+
+🎤 Voice Assessment:
+Voice Quality: {{ analysis_result.voice_quality }}
+Volume Level: {{ analysis_result.volume_level }}
+Pitch Level: {{ analysis_result.pitch_level }}
+Articulation: {{ analysis_result.articulation }}
+
+💬 Speech Recognition:
+Spoken Text: "{{ analysis_result.spoken_text }}"
+Speech Detected: {{ analysis_result.speech_detected|yesno:"Yes,No" }}
+
+📊 Technical Details:
+Duration: {{ analysis_result.duration_seconds|floatformat:2 }} seconds
+Sample Rate: {{ analysis_result.sample_rate }} Hz
+Confidence: {{ analysis_result.confidence|floatformat:3 }}
+{% endif %}
+        </textarea>
+      </div>
+    </form>
+
+    <div class="alert hidden mt-4 text-white" id="statusMessage" role="alert"></div>
+  </section>
+
+  <!-- Script -->
+  <script>
+    const cursorDot = document.querySelector('.cursor-dot');
+    const cursorOutline = document.querySelector('.cursor-outline');
+    const interactiveTargets = document.querySelectorAll('a, button');
+
+    let mouseX = 0, mouseY = 0;
+    let dotX = 0, dotY = 0;
+    let outlineX = 0, outlineY = 0;
+    const ease = 0.15;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function animateCursor() {
+      dotX = mouseX;
+      dotY = mouseY;
+      cursorDot.style.transform = `translate(${dotX - 4}px, ${dotY - 4}px)`;
+      outlineX += (mouseX - outlineX) * ease;
+            outlineY += (mouseY - outlineY) * ease;
+      cursorOutline.style.transform = `translate(${outlineX - 20}px, ${outlineY - 20}px)`;
+      requestAnimationFrame(animateCursor);
+    }
+
+    animateCursor();
+
+    // Mic Recording Logic
+    const recordButton = document.getElementById("recordButton");
+    const voiceNoteInput = document.getElementById("voice_note");
+    const audioPlayback = document.getElementById("audioPlayback");
+    const statusMessage = document.getElementById("statusMessage");
+    const micStatus = document.getElementById("mic-status");
+
+    let mediaRecorder;
+    let audioChunks = [];
+
+    recordButton.addEventListener("click", function () {
+      if (this.classList.contains("recording")) {
+        stopRecording();
+        this.classList.remove("recording");
+        this.innerHTML = '<span class="icon">●</span> Start Recording';
+      } else {
+        startRecording();
+        this.classList.add("recording");
+        this.innerHTML = '<span class="icon">⏹</span> Stop Recording';
+      }
+    });
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: "audio/webm;codecs=opus",
+        });
+
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = function (event) {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = function () {
+          const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+          const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+          const filename = `recording-${timestamp}.webm`;
+
+          const audioFile = new File([audioBlob], filename, {
+            type: "audio/webm",
+            lastModified: Date.now(),
+          });
+
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(audioFile);
+          voiceNoteInput.files = dataTransfer.files;
+
+          const audioUrl = URL.createObjectURL(audioBlob);
+          audioPlayback.src = audioUrl;
+          audioPlayback.classList.remove("hidden");
+
+          stream.getTracks().forEach(track => track.stop());
+
+          showStatus(`Recording saved as ${filename}`, "success");
+          micStatus.textContent = "Recording complete. Ready to submit.";
+        };
+
+        mediaRecorder.start();
+        micStatus.textContent = "Recording... Speak clearly.";
+      } catch (error) {
+        console.error("Mic access error:", error);
+        showStatus("Error accessing microphone. Please check permissions.", "error");
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
+    }
+
+    function showStatus(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = `alert alert-${type}`;
+      statusMessage.classList.remove("hidden");
+      setTimeout(() => statusMessage.classList.add("hidden"), 5000);
+    }
+
+    // Form Submission Validation
+    document.getElementById("registrationForm").addEventListener("submit", function (e) {
+      if (!voiceNoteInput.files.length) {
+        e.preventDefault();
+        showStatus("Please record your voice before submitting.", "error");
+      } else {
+        showStatus("Submitting voice for analysis...", "info");
+      }
+    });
+
+    // Initialize icons and mic state
+    window.onload = function () {
+      lucide.createIcons();
+      recordButton.classList.add("mic-ready");
+    };
+  </script>
+</body>
+</html>
