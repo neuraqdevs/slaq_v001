@@ -1,0 +1,28 @@
+
+
+# Virtualenv
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Test and coverage
+.coverage
+htmlcov/
+*.cover
+*.py,cover
+
+# IDEs
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+*/migrations/*
+*/__pycache__/*
