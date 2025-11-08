@@ -1,5 +1,5 @@
 :root {
-            /* Dark Vercel theme variables */
+            --brand-blue-rgb: 59, 130, 246;
             --background: #ffffff;
             --foreground: #000000;
             --card-foreground: #000000;
@@ -258,4 +258,150 @@
         .py-3 {
             padding-top: 12px;
             padding-bottom: 12px;
+        }
+        
+        /* Exercise Cards */
+        .exercise-card {
+            position: relative;
+            height: 280px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border);
+        }
+
+        .exercise-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .exercise-card-image {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+            filter: grayscale(1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .exercise-card:hover .exercise-card-image {
+            opacity: 0.6;
+            filter: grayscale(0);
+            transform: scale(1.05);
+        }
+
+        .exercise-card-content {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            background: linear-gradient(
+                to top,
+                rgba(255, 255, 255, 0.95),
+                rgba(255, 255, 255, 0.8)
+            );
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Exercise Card Images */
+        .exercise-1 { background-image: url('https://placehold.co/600x400/222222/666666?text=Phoneme+Practice'); }
+        .exercise-2 { background-image: url('https://placehold.co/600x400/222222/666666?text=Articulation+Drills'); }
+        .exercise-3 { background-image: url('https://placehold.co/600x400/222222/666666?text=Placement+Techniques'); }
+        .exercise-4 { background-image: url('https://placehold.co/600x400/222222/666666?text=Sound+Discrimination'); }
+
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            overflow: hidden;
+            padding: 6rem 0;
+        }
+
+        .hero-overlay-text {
+            font-size: 18vw;
+            font-weight: 900;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(
+                to right,
+                rgba(0, 0, 0, 0.03),
+                rgba(0, 0, 0, 0.01)
+            );
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            -webkit-user-select: none;
+            user-select: none;
+            z-index: 1;
+            letter-spacing: -0.05em;
+            line-height: 0.9;
+            text-transform: uppercase;
+        }
+
+        .animated-gradient {
+            background: linear-gradient(
+                120deg,
+                rgba(var(--brand-blue-rgb), 0.05),
+                rgba(var(--brand-blue-rgb), 0),
+                rgba(var(--brand-blue-rgb), 0.05)
+            );
+            background-size: 200% 100%;
+            animation: gradientMove 15s linear infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 100% 50%; }
+            100% { background-position: -100% 50%; }
+        }
+
+        /* Custom Cursor */
+        .cursor-dot,
+        .cursor-outline {
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-radius: 50%;
+            z-index: 9999;
+            will-change: transform;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            transition: transform 0.15s ease-out, width 0.2s ease, height 0.2s ease;
+        }
+
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.3s ease,
+                border-color 0.3s ease,
+                width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.3s ease;
+        }
+
+        .cursor-hidden .cursor-dot,
+        .cursor-hidden .cursor-outline {
+            opacity: 0;
+        }
+
+        .hovered-cursor .cursor-outline {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: white;
         }

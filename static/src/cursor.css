@@ -1,0 +1,49 @@
+/* Custom Cursor CSS */
+.cursor-dot, .cursor-outline {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    z-index: 9999;
+    will-change: transform;
+}
+
+.cursor-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--brand-blue);
+    transition: transform 0.1s ease-out;
+}
+
+.cursor-outline {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                background-color 0.3s ease,
+                border-color 0.3s ease,
+                width 0.3s ease,
+                height 0.3s ease;
+}
+
+.hovered-cursor .cursor-outline {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(59, 130, 246, 0.3);
+    border-color: var(--brand-blue);
+}
+
+.cursor-hidden .cursor-dot,
+.cursor-hidden .cursor-outline {
+    opacity: 0;
+}
+
+/* Interactive Elements Hover State */
+.interactive-card {
+    transition: transform 0.3s ease;
+}
+
+.interactive-card:hover {
+    transform: translateY(-2px);
+}
