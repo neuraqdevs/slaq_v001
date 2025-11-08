@@ -6,7 +6,7 @@
 working files `audio_processor.py` or create your own. <br />
 NOTE : current changes are done under `analyzer` branch, use 
 ```d
-git switch analyzer
+git switch main
 ````
 
 2. Create and activate a Python virtual environment:
